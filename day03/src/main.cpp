@@ -1,7 +1,8 @@
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <map>
+#include <regex>
+#include <string>
 
 // Forward declarations
 struct Claim {
@@ -43,15 +44,14 @@ std::map<int, Claim> load(std::ifstream& input) {
 }
 Claim parse_claim(const std::string& claim_string) {
     Claim claim;
-    int at = claim_string.find('@', 0);
-    int comma = claim_string.find(',', 0);
-    int colon = claim_string.find(':', 0);
-    int x = claim_string.find('x', 0);
-    claim.id = std::stoi(claim_string.substr(1, at - 2));
-    claim.left_offset = std::stoi(claim_string.substr(at + 2, comma - at - 2));
-    claim.top_offset = std::stoi(claim_string.substr(comma + 1, colon - comma - 1));
-    claim.width = std::stoi(claim_string.substr(colon + 2, x - colon - 2));
-    claim.height = std::stoi(claim_string.substr(x + 1, claim_string.length() - x - 2));
+    std::regex pattern {R"(#(\d+)\s@\s(\d+),(\d+):\s(\d+)x(\d+))"};
+    std::smatch matches;
+    std::regex_search(claim_string, matches, pattern);
+    claim.id = std::stoi(matches[1]);
+    claim.left_offset = std::stoi(matches[2]);
+    claim.top_offset = std::stoi(matches[3]);
+    claim.width = std::stoi(matches[4]);
+    claim.height = std::stoi(matches[5]);
     return claim;
 }
 int part1(std::map<int, Claim> claims) {
