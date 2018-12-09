@@ -22,6 +22,7 @@ struct Claim {
 };
 std::map<int, Claim> load(std::ifstream& input);
 int part1(std::map<int, Claim>);
+int part2(std::map<int, Claim>);
 Claim parse_claim(const std::string& claim_string);
 
 int main(int argc, const char * argv[]) {
@@ -30,8 +31,10 @@ int main(int argc, const char * argv[]) {
     input.close();
 
     int overlap = part1(claims);
+    int best_claim_id = part2(claims);
 
     std::cout << "The number of overlap claims is: " << overlap << std::endl;
+    std::cout << "The only claim that doesn't overlap is: " << best_claim_id << std::endl;
 }
 std::map<int, Claim> load(std::ifstream& input) {
     std::map<int, Claim> claims;
@@ -68,4 +71,36 @@ int part1(std::map<int, Claim> claims) {
         }
     }
     return overlap;
+}
+int part2(std::map<int, Claim> claims) {
+    int best_claim_id = 0;
+    std::map<std::pair<int, int>, std::vector<int>> claim_map;
+    for(auto& item : claims) {
+        Claim claim = item.second;
+        for (int row = claim.top_offset; row < claim.top_offset + claim.height; row++) {
+            for (int column = claim.left_offset; column < claim.left_offset + claim.width; column++) {
+                claim_map[std::pair<int, int> {row, column}].push_back(claim.id);
+            }
+        }
+    }
+    std::vector<int> claim_ids;
+    for(int i = 0; i < claims.size() + 1; i++) {
+        claim_ids.push_back(i);
+        std::cout << "Claim id: " << i << " is at vector location: " << claim_ids[i-1] << std::endl;
+    }
+    for(auto& key_val : claim_map) {
+        auto& claim_id_list = key_val.second;
+        if (claim_id_list.size() > 1) {
+            for(auto& claim_id : claim_id_list) {
+                claim_ids[claim_id] = 0;
+            }
+        }
+    }
+    for(auto& claim_id : claim_ids) {
+        if (claim_id > 0) {
+            best_claim_id = claim_id;
+            break;
+        }
+    }
+    return best_claim_id;
 }
